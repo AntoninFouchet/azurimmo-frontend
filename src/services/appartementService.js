@@ -19,6 +19,14 @@ class AppartementService {
         return axios.post(`${API_URL}/`, appartement);
     }
 
+    getAllAppartements() {
+        return axios.get(`${API_URL}/all`);
+    }
+
+    getAppartementById(id) {
+        return axios.get(`${API_URL}/${id}`);
+    }
+
 }
 
 export default new AppartementService();

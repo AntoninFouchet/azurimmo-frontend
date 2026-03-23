@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import AppartementService from '../services/appartementService';
 
 const PageListeAppartements = () => {
-    // Variables d'état
     const [appartements, setAppartements] = useState([]);
     const [batimentId, setBatimentId] = useState("");
     const [ville, setVille] = useState("");
@@ -14,172 +14,112 @@ const PageListeAppartements = () => {
     const [newBatimentId, setNewBatimentId] = useState("");
     const [newNbPieces, setNewNbPieces] = useState("");
 
-    const rechercherAppartements = () => {
-        if (!batimentId) return; // Si le champ est vide, on n'affiche rien
+    useEffect(() => {
+        chargerTousLesAppartements();
+    }, []);
 
-        AppartementService.getAppartementsParBatiment(batimentId)
-            .then(response => {
-                setAppartements(response.data);
-            })
+    const chargerTousLesAppartements = () => {
+        AppartementService.getAllAppartements()
+            .then(response => setAppartements(response.data))
+            .catch(error => console.error("Erreur de chargement:", error));
+    };
+
+    const rechercherAppartements = () => {
+        if (!batimentId) return chargerTousLesAppartements();
+        AppartementService.getAppartementsParBatiment(batimentId).then(response => setAppartements(response.data));
     };
 
     const rechercherAppartementsParVille = () => {
-        AppartementService.findByVille(ville)
-            .then(response => {
-                setAppartements(response.data);
-            })
+        if (!ville) return chargerTousLesAppartements();
+        AppartementService.findByVille(ville).then(response => setAppartements(response.data));
     };
 
     const rechercherAppartementsParSurface = () => {
-        AppartementService.findAppartementsBySurfaceGreaterThan(surface)
-            .then(response => {
-                setAppartements(response.data);
-            })
+        if (!surface) return chargerTousLesAppartements();
+        AppartementService.findAppartementsBySurfaceGreaterThan(surface).then(response => setAppartements(response.data));
     };
 
-    // Création d'un nouvel appartement
     const createAppartement = () => {
         const newAppartement = {
             numero: parseInt(newNumero),
             description: newDescription,
             surface: parseFloat(newSurface),
             nbPieces: parseInt(newNbPieces),
-            batiment: {
-                id: parseInt(newBatimentId)
-            }
+            batiment: { id: parseInt(newBatimentId) }
         };
 
         AppartementService.createAppartement(newAppartement)
             .then(response => {
                 setAppartements([...appartements, response.data]);
-
-                setNewNumero("");
-                setNewDescription("");
-                setNewSurface("");
-                setNewBatimentId("");
-                setNewNbPieces("");
-
+                setNewNumero(""); setNewDescription(""); setNewSurface(""); setNewBatimentId(""); setNewNbPieces("");
                 alert("Appartement créé avec succès !");
             })
-            .catch(error => {
-                console.error("Erreur de création :", error);
-                alert("Erreur lors de la création. Vérifiez l'ID du bâtiment.");
-            });
+            .catch(error => alert("Erreur lors de la création."));
     };
 
     return (
-        <div>
-            <h2>Gestion des appartements par Bâtiment</h2>
+        <div className="page-container">
+            <header className="page-header">
+                <h1>Patrimoine Immobilier</h1>
+                <p>Gérez vos actifs avec précision et élégance.</p>
+            </header>
 
-            <div>
-                <input
-                    type="number"
-                    placeholder="Saisir l'ID du bâtiment"
-                    value={batimentId}
-                    onChange={(e) => setBatimentId(e.target.value)}
-                />
-                <button onClick={rechercherAppartements}>
-                    Rechercher
-                </button>
+            {/* BARRE DE RECHERCHE (BENTO STYLE) */}
+            <div className="creation-box search-section">
+                <div className="search-group">
+                    <input type="number" placeholder="ID Bâtiment" value={batimentId} onChange={(e) => setBatimentId(e.target.value)} />
+                    <button onClick={rechercherAppartements}>Chercher</button>
+                </div>
+                <div className="search-group">
+                    <input type="text" placeholder="Ville" value={ville} onChange={(e) => setVille(e.target.value)} />
+                    <button onClick={rechercherAppartementsParVille}>Chercher</button>
+                </div>
+                <div className="search-group">
+                    <input type="number" placeholder="Surface min." value={surface} onChange={(e) => setSurface(e.target.value)} />
+                    <button onClick={rechercherAppartementsParSurface}>Chercher</button>
+                </div>
+                <button className="btn-secondary" onClick={chargerTousLesAppartements}>Réinitialiser</button>
             </div>
 
-            <br />
-
-            <div>
-                <input
-                    type="text"
-                    placeholder="Saisir la ville"
-                    value={ville}
-                    onChange={(e) => setVille(e.target.value)}
-                />
-                <button onClick={rechercherAppartementsParVille}>
-                    Rechercher par Ville
-                </button>
-            </div>
-
-            <br />
-
-            <div>
-                <input
-                    type="number"
-                    placeholder="Saisir la surface minimale"
-                    value={surface}
-                    onChange={(e) => setSurface(e.target.value)}
-                />
-                <button onClick={rechercherAppartementsParSurface}>
-                    Rechercher par Surface
-                </button>
-            </div>
-
-            <br />
-
-            {/* Création d'un nouvel appartement avec la classe CSS globale */}
+            {/* ZONE D'AJOUT */}
             <div className="creation-box">
-                <h3>➕ Créer un Appartement</h3>
-                <input
-                    type="number"
-                    placeholder="Numéro"
-                    value={newNumero}
-                    onChange={(e) => setNewNumero(e.target.value)}
-                />
-                <input
-                    type="text"
-                    placeholder="Description"
-                    value={newDescription}
-                    onChange={(e) => setNewDescription(e.target.value)}
-                />
-                <input
-                    type="number"
-                    placeholder="Surface (m²)"
-                    value={newSurface}
-                    onChange={(e) => setNewSurface(e.target.value)}
-                />
-                <input
-                    type="number"
-                    placeholder="ID du Bâtiment"
-                    value={newBatimentId}
-                    onChange={(e) => setNewBatimentId(e.target.value)}
-                />
-                <input
-                    type="number"
-                    placeholder="Nb Pièces"
-                    value={newNbPieces}
-                    onChange={(e) => setNewNbPieces(e.target.value)}
-                />
-                <button onClick={createAppartement}>
-                    Sauvegarder
-                </button>
+                <h3>Ajouter un Appartement</h3>
+                <div className="form-grid">
+                    <input type="number" placeholder="Numéro" value={newNumero} onChange={(e) => setNewNumero(e.target.value)} />
+                    <input type="text" placeholder="Description" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
+                    <input type="number" placeholder="Surface (m²)" value={newSurface} onChange={(e) => setNewSurface(e.target.value)} />
+                    <input type="number" placeholder="Nb Pièces" value={newNbPieces} onChange={(e) => setNewNbPieces(e.target.value)} />
+                    <input type="number" placeholder="ID Bâtiment" value={newBatimentId} onChange={(e) => setNewBatimentId(e.target.value)} />
+                    <button onClick={createAppartement}>Sauvegarder</button>
+                </div>
             </div>
 
-            {/* Tableau */}
-            <table>
-                <thead>
-                <tr>
-                    <th>Numéro</th>
-                    <th>Description</th>
-                    <th>Surface (m²)</th>
-                    <th>Nb Pièces</th>
-                </tr>
-                </thead>
-                <tbody>
-                {appartements.length > 0 ? (
-                    appartements.map((app, index) => (
-                        <tr key={index}>
-                            <td>{app.numero}</td>
-                            <td>{app.description}</td>
-                            <td>{app.surface}</td>
-                            <td>{app.nbPieces}</td>
-                        </tr>
-                    ))
-                ) : (
-                    <tr>
-                        <td colSpan="4" style={{ textAlign: 'center' }}>
-                            Aucun appartement à afficher pour ce bâtiment.
-                        </td>
-                    </tr>
-                )}
-                </tbody>
-            </table>
+            {/* GRILLE APPARTEMENTS */}
+            {appartements.length > 0 ? (
+                <div className="apartment-grid">
+                    {appartements.map((app) => (
+                        <div key={app.id} className="apartment-card">
+                            <div className="card-header">
+                                <span className="card-number">App. #{app.numero}</span>
+                                <span className="badge badge-pieces">{app.nbPieces} Pièces</span>
+                            </div>
+                            <p className="card-description">{app.description || "Résidence de prestige AzurImmo."}</p>
+                            <div className="card-stats">
+                                <span className="badge badge-surface">{app.surface} m²</span>
+                            </div>
+                            <div className="card-footer">
+                                <Link to={`/appartements/${app.id}`} style={{ width: '100%' }}>
+                                    <button className="btn-secondary" style={{ width: '100%' }}>Détails du bien</button>
+                                </Link>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="creation-box" style={{ textAlign: 'center', padding: '50px' }}>
+                    <p className="text-muted">Aucun bien ne correspond à vos critères.</p>
+                </div>
+            )}
         </div>
     );
 };
