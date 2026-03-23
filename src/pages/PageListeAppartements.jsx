@@ -4,7 +4,6 @@ import AppartementService from '../services/appartementService';
 
 const PageListeAppartements = () => {
     const [appartements, setAppartements] = useState([]);
-
     const [batimentId, setBatimentId] = useState("");
     const [ville, setVille] = useState("");
     const [surface, setSurface] = useState("");
@@ -15,37 +14,30 @@ const PageListeAppartements = () => {
     const [newBatimentId, setNewBatimentId] = useState("");
     const [newNbPieces, setNewNbPieces] = useState("");
 
-
     useEffect(() => {
         chargerTousLesAppartements();
     }, []);
 
     const chargerTousLesAppartements = () => {
         AppartementService.getAllAppartements()
-            .then(response => {
-                setAppartements(response.data);
-            })
+            .then(response => setAppartements(response.data))
             .catch(error => console.error("Erreur de chargement:", error));
     };
 
     const rechercherAppartements = () => {
         if (!batimentId) return chargerTousLesAppartements();
-        AppartementService.getAppartementsParBatiment(batimentId)
-            .then(response => setAppartements(response.data));
+        AppartementService.getAppartementsParBatiment(batimentId).then(response => setAppartements(response.data));
     };
 
     const rechercherAppartementsParVille = () => {
         if (!ville) return chargerTousLesAppartements();
-        AppartementService.findByVille(ville)
-            .then(response => setAppartements(response.data));
+        AppartementService.findByVille(ville).then(response => setAppartements(response.data));
     };
 
     const rechercherAppartementsParSurface = () => {
         if (!surface) return chargerTousLesAppartements();
-        AppartementService.findAppartementsBySurfaceGreaterThan(surface)
-            .then(response => setAppartements(response.data));
+        AppartementService.findAppartementsBySurfaceGreaterThan(surface).then(response => setAppartements(response.data));
     };
-
 
     const createAppartement = () => {
         const newAppartement = {
@@ -59,89 +51,75 @@ const PageListeAppartements = () => {
         AppartementService.createAppartement(newAppartement)
             .then(response => {
                 setAppartements([...appartements, response.data]);
-
-                // On vide les champs
-                setNewNumero("");
-                setNewDescription("");
-                setNewSurface("");
-                setNewBatimentId("");
-                setNewNbPieces("");
+                setNewNumero(""); setNewDescription(""); setNewSurface(""); setNewBatimentId(""); setNewNbPieces("");
                 alert("Appartement créé avec succès !");
             })
-            .catch(error => {
-                console.error("Erreur de création :", error);
-                alert("Erreur lors de la création.");
-            });
+            .catch(error => alert("Erreur lors de la création."));
     };
 
-
     return (
-        <div>
-            <h2>Tous les Appartements</h2>
+        <div className="page-container">
+            <header className="page-header">
+                <h1>Patrimoine Immobilier</h1>
+                <p>Gérez vos actifs avec précision et élégance.</p>
+            </header>
 
-            <div>
-                <div>
+            {/* BARRE DE RECHERCHE (BENTO STYLE) */}
+            <div className="creation-box search-section">
+                <div className="search-group">
                     <input type="number" placeholder="ID Bâtiment" value={batimentId} onChange={(e) => setBatimentId(e.target.value)} />
                     <button onClick={rechercherAppartements}>Chercher</button>
                 </div>
-                <div>
+                <div className="search-group">
                     <input type="text" placeholder="Ville" value={ville} onChange={(e) => setVille(e.target.value)} />
                     <button onClick={rechercherAppartementsParVille}>Chercher</button>
                 </div>
-                <div>
+                <div className="search-group">
                     <input type="number" placeholder="Surface min." value={surface} onChange={(e) => setSurface(e.target.value)} />
                     <button onClick={rechercherAppartementsParSurface}>Chercher</button>
                 </div>
-                <button onClick={chargerTousLesAppartements} >Tout afficher</button>
+                <button className="btn-secondary" onClick={chargerTousLesAppartements}>Réinitialiser</button>
             </div>
 
-            {/*  ZONE D'AJOUT */}
+            {/* ZONE D'AJOUT */}
             <div className="creation-box">
-                <h3>➕ Créer un Appartement</h3>
-                <input type="number" placeholder="Numéro" value={newNumero} onChange={(e) => setNewNumero(e.target.value)} />
-                <input type="text" placeholder="Description" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
-                <input type="number" placeholder="Surface (m²)" value={newSurface} onChange={(e) => setNewSurface(e.target.value)} />
-                <input type="number" placeholder="Nb Pièces" value={newNbPieces} onChange={(e) => setNewNbPieces(e.target.value)} />
-                <input type="number" placeholder="ID Bâtiment" value={newBatimentId} onChange={(e) => setNewBatimentId(e.target.value)} />
-                <button onClick={createAppartement}>Sauvegarder</button>
+                <h3>Ajouter un Appartement</h3>
+                <div className="form-grid">
+                    <input type="number" placeholder="Numéro" value={newNumero} onChange={(e) => setNewNumero(e.target.value)} />
+                    <input type="text" placeholder="Description" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
+                    <input type="number" placeholder="Surface (m²)" value={newSurface} onChange={(e) => setNewSurface(e.target.value)} />
+                    <input type="number" placeholder="Nb Pièces" value={newNbPieces} onChange={(e) => setNewNbPieces(e.target.value)} />
+                    <input type="number" placeholder="ID Bâtiment" value={newBatimentId} onChange={(e) => setNewBatimentId(e.target.value)} />
+                    <button onClick={createAppartement}>Sauvegarder</button>
+                </div>
             </div>
 
-            {/* TABLEAU */}
-            <table>
-                <thead>
-                <tr>
-                    <th>Numéro</th>
-                    <th>Description</th>
-                    <th>Surface (m²)</th>
-                    <th>Nb Pièces</th>
-                    <th>Action</th>
-                </tr>
-                </thead>
-                <tbody>
-                {appartements.length > 0 ? (
-                    appartements.map((app, index) => (
-                        <tr key={index}>
-                            <td>{app.numero}</td>
-                            <td>{app.description}</td>
-                            <td>{app.surface}</td>
-                            <td>{app.nbPieces}</td>
-                            <td>
-                                {/*  LE BOUTON POUR ALLER SUR LA PAGE DÉTAIL */}
-                                <Link to={`/appartements/${app.id}`}>
-                                    <button>Détails</button>
+            {/* GRILLE APPARTEMENTS */}
+            {appartements.length > 0 ? (
+                <div className="apartment-grid">
+                    {appartements.map((app) => (
+                        <div key={app.id} className="apartment-card">
+                            <div className="card-header">
+                                <span className="card-number">App. #{app.numero}</span>
+                                <span className="badge badge-pieces">{app.nbPieces} Pièces</span>
+                            </div>
+                            <p className="card-description">{app.description || "Résidence de prestige AzurImmo."}</p>
+                            <div className="card-stats">
+                                <span className="badge badge-surface">{app.surface} m²</span>
+                            </div>
+                            <div className="card-footer">
+                                <Link to={`/appartements/${app.id}`} style={{ width: '100%' }}>
+                                    <button className="btn-secondary" style={{ width: '100%' }}>Détails du bien</button>
                                 </Link>
-                            </td>
-                        </tr>
-                    ))
-                ) : (
-                    <tr>
-                        <td colSpan="5" style={{ textAlign: 'center' }}>
-                            Aucun appartement trouvé.
-                        </td>
-                    </tr>
-                )}
-                </tbody>
-            </table>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="creation-box" style={{ textAlign: 'center', padding: '50px' }}>
+                    <p className="text-muted">Aucun bien ne correspond à vos critères.</p>
+                </div>
+            )}
         </div>
     );
 };
