@@ -14,7 +14,7 @@ function App() {
 
                 {/* EN-TÊTE GLOBAL */}
                 <div>
-                    <h1 style={{ color: '#2c3e50' }}>Gestion AzurImmo</h1>
+                    <h1>Gestion AzurImmo</h1>
                     <hr />
                 </div>
 
