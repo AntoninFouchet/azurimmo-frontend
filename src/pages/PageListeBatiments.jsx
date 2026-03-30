@@ -10,27 +10,27 @@ const PageListeBatiments = () => {
     const [newAdresse, setNewAdresse] = useState("");
     const [newVille, setNewVille] = useState("");
 
-    useEffect(() => {
-        chargerTousLesBatiments();
-    }, []);
-
     const chargerTousLesBatiments = () => {
         batimentService.getAllBatiments()
             .then(response => setBatiments(response.data))
             .catch(error => console.error("Erreur de chargement:", error));
     };
 
+    useEffect(() => {
+        chargerTousLesBatiments();
+    }, []);
+
+
     const rechercherBatiment = () => {
         if (!batimentId) return chargerTousLesBatiments();
 
         batimentService.getBatimentById(batimentId)
             .then(response => {
-                // Si on trouve le bâtiment, on le met dans un tableau pour l'affichage
                 setBatiments([response.data]);
             })
             .catch(error => {
                 console.error("Bâtiment introuvable :", error);
-                setBatiments([]); // On vide la liste si rien n'est trouvé
+                setBatiments([]);
             });
     };
 
@@ -39,14 +39,9 @@ const PageListeBatiments = () => {
             adresse: newAdresse,
             ville: newVille
         };
-
-        // Attention à la minuscule ici aussi !
         batimentService.createBatiment(newBatiment)
             .then(response => {
-                // On met à jour la liste avec le nouveau bâtiment
                 setBatiments([...batiments, response.data]);
-
-                // On vide le formulaire
                 setNewAdresse("");
                 setNewVille("");
                 alert("Bâtiment créé avec succès !");
