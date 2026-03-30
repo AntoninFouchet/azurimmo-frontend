@@ -3,6 +3,7 @@ import PageListeAppartements from './pages/PageListeAppartements.jsx';
 import PageDetailAppartement from './pages/PageDetailAppartement.jsx';
 import PageListeBatiments from './pages/PageListeBatiments.jsx';
 import PageAccueil from './pages/PageAccueil.jsx';
+import PageDetailBatiment from './pages/PageDetailBatiment.jsx';
 
 function App() {
     return (
@@ -26,6 +27,7 @@ function App() {
                         <Route path="/appartements" element={<PageListeAppartements />} />
                         <Route path="/appartements/:id" element={<PageDetailAppartement />} />
                         <Route path="/batiments" element={<PageListeBatiments />} />
+                        <Route path="/batiments/:id" element={<PageDetailBatiment />} />
                     </Routes>
                 </div>
             </div>
